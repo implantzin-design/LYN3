@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lyn&lt;3</title>
+<style>
+:root{--bg:#fafafa;--fg:#1a1a1a;--mut:#777;--card:#fff;--ac:#7c3aed;--ln:#e5e5e5;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--fg:#f2f2f2;--mut:#999;--card:#1e1e1e;--ac:#a78bfa;--ln:#2e2e2e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121212;--fg:#f2f2f2;--mut:#999;--card:#1e1e1e;--ac:#a78bfa;--ln:#2e2e2e;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px system-ui,sans-serif}
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+nav{display:flex;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--ln);z-index:5}
+nav button{flex:1;padding:14px;border:0;background:none;color:var(--mut);font-size:15px;font-weight:600}
+nav button.on{color:var(--ac);border-bottom:3px solid var(--ac)}
+main{padding:12px;max-width:640px;margin:auto}
+.row{display:flex;align-items:center;gap:8px;padding:10px;background:var(--card);border:1px solid var(--ln);border-radius:12px;margin:8px 0}
+.row .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.cur .t{color:var(--ac);font-weight:700}
+button.b{border:1px solid var(--ln);background:var(--card);color:var(--fg);border-radius:10px;padding:8px 12px;font-size:14px}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ic{width:34px;height:34px;padding:0;font-size:15px}
+input[type=text],textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--card);color:var(--fg);font:inherit}
+h3{margin:16px 0 4px}small,.mut{color:var(--mut)}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--ln);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));z-index:6}
+#bar .top{display:flex;align-items:center;gap:6px}
+#bar .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.on-b{background:var(--ac)!important;color:#fff!important}
+#ly,#sh{position:fixed;inset:0;background:var(--bg);z-index:10;display:none;flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+#sh{background:rgba(0,0,0,.5);justify-content:flex-end;padding:0}
+#sh .in{background:var(--bg);padding:16px;border-radius:16px 16px 0 0;max-height:70%;overflow:auto}
+#ll{flex:1;overflow:auto;text-align:center;padding:30vh 0}
+#ll p{margin:0;padding:10px 0;font-size:22px;color:var(--mut);transition:.25s}
+#ll p.a{color:var(--fg);font-size:28px;font-weight:700}
+.cv{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--ln);flex:none}#bcv{width:42px;height:42px}#lc{width:min(60vw,260px);aspect-ratio:1;border-radius:16px;object-fit:cover;align-self:center;margin-top:12px;background:var(--ln)}#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom,0px));background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:20;display:none;max-width:90%;text-align:center}
+</style></head><body>
+<div style="text-align:center;font-weight:800;font-size:22px;padding:12px 0 6px;color:var(--ac)">Lyn&lt;3</div>
+<nav><button data-v="lib" class="on">Biblioteca</button><button data-v="pl">Playlists</button></nav>
+<main id="m"></main>
+
+<div id="bar">
+ <div class="top"><img class="cv" id="bcv" alt="" hidden><div class="nm" id="nm">Nada en reproducción</div>
+ <button class="b ic" id="bsh" title="Aleatorio">🔀</button>
+ <button class="b ic" id="bpv">⏮</button><button class="b ic p" id="bpp">▶</button><button class="b ic" id="bnx">⏭</button>
+ <button class="b ic" id="bly">🎤</button></div>
+ <input type="range" id="sk" min="0" max="1000" value="0">
+</div>
+
+<div id="ly"><div style="display:flex;gap:8px;align-items:center"><button class="b" id="lx">← Volver</button><b id="lt" class="t" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b><button class="b" id="le">Editar letra</button></div>
+<img id="lc" alt="" hidden><div id="ll"></div></div>
+<div id="sh"><div class="in" id="shi"></div></div>
+<input type="file" id="fi" accept="audio/*,.lrc,.txt,.mp3,.m4a,.flac,.ogg,.wav" multiple hidden>
+<input type="file" id="fl" accept=".lrc,.txt" hidden>
+<div id="toast"></div><audio id="au" preload="auto"></audio>
+
+<script>
+const $=s=>document.querySelector(s),au=$('#au');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+let db,meta={tracks:[],playlists:[]},view='lib',openPl=null;
+let ctx={key:null,ids:[]},bags={},hist=[],cur=null,shuffle=true,lines=[],ai=-1,lyTarget=null;
+
+/* ---------- Almacenamiento (IndexedDB) ---------- */
+const idb=()=>new Promise((r,j)=>{const q=indexedDB.open('mus',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)});
+const put=(k,v)=>new Promise((r,j)=>{const t=db.transaction('f','readwrite');t.objectStore('f').put(v,k);t.oncomplete=r;t.onerror=j});
+const get=k=>new Promise((r,j)=>{const q=db.transaction('f').objectStore('f').get(k);q.onsuccess=()=>r(q.result);q.onerror=j});
+const rm=k=>new Promise((r,j)=>{const t=db.transaction('f','readwrite');t.objectStore('f').delete(k);t.oncomplete=r;t.onerror=j});
+const save=()=>put('meta',meta).catch(()=>{});
+
+/* ---------- Importar ---------- */
+const base=n=>n.replace(/\.[^.]+$/,'');
+$('#fi').onchange=async e=>{
+  const fs=[...e.target.files],lrcs={};
+  for(const f of fs) if(/\.(lrc|txt)$/i.test(f.name)) lrcs[base(f.name).toLowerCase()]=await f.text();
+  for(const f of fs){ if(/\.(lrc|txt)$/i.test(f.name))continue;
+    const id=uid();await put(id,f);meta.tracks.push({id,name:base(f.name),lrc:'',cover:await getCover(f)});}
+  meta.tracks.forEach(t=>{const l=lrcs[t.name.toLowerCase()];if(l)t.lrc=l});
+  await save();e.target.value='';render();enrich(meta.tracks.map(t=>t.id),true);
+};
+
+/* ---------- Aleatorio sin repetición ---------- */
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function pickNext(){
+  const ids=ctx.ids.filter(i=>meta.tracks.some(t=>t.id===i));
+  if(!ids.length)return null;
+  if(!shuffle){const k=ids.indexOf(cur);return ids[(k+1)%ids.length]}
+  let bag=(bags[ctx.key]||[]).filter(i=>ids.includes(i));
+  if(!bag.length){ // se agotaron todas: nueva ronda, sin repetir la última al inicio
+    bag=ids.filter(i=>i!==cur||ids.length===1);
+  }
+  const k=Math.floor(Math.random()*bag.length),id=bag[k];
+  bag.splice(k,1);bags[ctx.key]=bag;return id;
+}
+function startCtx(key,ids,first){
+  ctx={key,ids};hist=[];
+  if(first==null) first=shuffle?ids[Math.floor(Math.random()*ids.length)]:ids[0];
+  bags[key]=ids.filter(i=>i!==first);
+  play(first,false);
+}
+function next(){const id=pickNext();if(id)play(id,true)}
+function prev(){ if(au.currentTime>3||!hist.length){au.currentTime=0;return}
+  play(hist.pop(),false)}
+
+/* ---------- Reproducción ---------- */
+let url=null;
+async function play(id,push){
+  const t=meta.tracks.find(x=>x.id===id);if(!t)return;
+  const f=await get(id);if(!f)return;
+  if(push&&cur)hist.push(cur);
+  cur=id;if(url)URL.revokeObjectURL(url);
+  url=URL.createObjectURL(f);au.src=url;
+  try{await au.play()}catch(e){}
+  $('#nm').textContent=t.name;parseLrc(t.lrc);ai=-1;renderLy();setCover(t);render();
+  if('mediaSession' in navigator){
+    navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:'Lyn<3',artwork:t.cover?[{src:t.cover,sizes:'240x240',type:'image/jpeg'}]:[]});
+    navigator.mediaSession.setActionHandler('play',()=>au.play());
+    navigator.mediaSession.setActionHandler('pause',()=>au.pause());
+    navigator.mediaSession.setActionHandler('nexttrack',next);
+    navigator.mediaSession.setActionHandler('previoustrack',prev);
+  }
+}
+au.onended=next;
+au.onplay=()=>$('#bpp').textContent='⏸';au.onpause=()=>$('#bpp').textContent='▶';
+$('#bpp').onclick=()=>{if(!au.src)return;au.paused?au.play():au.pause()};
+$('#bnx').onclick=()=>{if(ctx.ids.length)next()};$('#bpv').onclick=prev;
+$('#bsh').onclick=()=>{shuffle=!shuffle;$('#bsh').classList.toggle('on-b',shuffle);if(shuffle&&ctx.ids.length)bags[ctx.key]=ctx.ids.filter(i=>i!==cur)};
+$('#bsh').classList.add('on-b');
+$('#sk').oninput=e=>{if(au.duration)au.currentTime=e.target.value/1000*au.duration};
+au.ontimeupdate=()=>{if(au.duration)$('#sk').value=au.currentTime/au.duration*1000;syncLy()};
+
+/* ---------- Letras sincronizadas ---------- */
+function parseLrc(s){
+  lines=[];if(!s)return;
+  const off=/\[offset:\s*(-?\d+)\]/i.exec(s);const o=off?+off[1]/1000:0;
+  let sync=false;
+  for(const raw of s.split(/\r?\n/)){
+    const tags=[...raw.matchAll(/\[(\d+):(\d+(?:[.:]\d+)?)\]/g)];
+    const txt=raw.replace(/\[[^\]]*\]/g,'').trim();
+    if(tags.length){sync=true;for(const m of tags)lines.push({t:+m[1]*60+parseFloat(m[2].replace(':','.'))-o,x:txt})}
+    else if(txt&&!/^\w+:/.test(raw.slice(1,8)))lines.push({t:null,x:txt});
+  }
+  if(sync)lines=lines.filter(l=>l.t!=null).sort((a,b)=>a.t-b.t);
+}
+function renderLy(){
+  const t=meta.tracks.find(x=>x.id===cur);$('#lt').textContent=t?t.name:'';
+  $('#ll').innerHTML=lines.length?lines.map((l,i)=>`<p data-i="${i}">${esc(l.x)||'♪'}</p>`).join(''):'<p>Sin letra. Toca “Editar letra” para cargar un .lrc o pegarla.</p>';
+}
+$('#ll').onclick=e=>{const p=e.target.closest('p[data-i]');if(p&&lines[p.dataset.i].t!=null)au.currentTime=lines[p.dataset.i].t};
+function syncLy(){
+  if(!lines.length||lines[0].t==null)return;
+  let k=-1;for(let i=0;i<lines.length;i++){if(lines[i].t<=au.currentTime+.15)k=i;else break}
+  if(k===ai)return;ai=k;
+  document.querySelectorAll('#ll p').forEach((p,i)=>p.classList.toggle('a',i===k));
+  const el=document.querySelector('#ll p.a');if(el)el.scrollIntoView({block:'center',behavior:'smooth'});
+}
+$('#bly').onclick=()=>{renderLy();$('#ly').style.display='flex';syncLy()};
+$('#lx').onclick=()=>$('#ly').style.display='none';
+$('#le').onclick=()=>editLy(cur);
+function editLy(id){
+  const t=meta.tracks.find(x=>x.id===id);if(!t)return;lyTarget=id;
+  sheet(`<b>Letra: ${esc(t.name)}</b><p class="mut">Pega la letra en formato LRC (con [mm:ss.xx]) o carga un archivo .lrc.</p>
+  <textarea id="lt2" rows="8">${esc(t.lrc)}</textarea>
+  <div style="display:flex;gap:8px;margin-top:8px"><button class="b" id="lf">Cargar .lrc</button><button class="b" id="lw">🌐 Buscar</button><button class="b p" id="ls">Guardar</button></div>`);
+  $('#lf').onclick=()=>$('#fl').click();
+  $('#lw').onclick=async()=>{toast('Buscando letra…');const r=await fetchLyrics(t);if(r){$('#lt2').value=r;toast('Letra encontrada')}};
+  $('#ls').onclick=async()=>{t.lrc=$('#lt2').value;await save();closeSheet();if(cur===id){parseLrc(t.lrc);renderLy()}render()};
+}
+$('#fl').onchange=async e=>{const f=e.target.files[0];if(f&&$('#lt2'))$('#lt2').value=await f.text();e.target.value=''};
+
+/* ---------- Carátulas y letras ---------- */
+let tt,netFail=false;function toast(s){const e=$('#toast');e.textContent=s;e.style.display='block';clearTimeout(tt);tt=setTimeout(()=>e.style.display='none',3500)}
+const cvHtml=t=>t.cover?`<img class="cv" src="${t.cover}" alt="">`:`<div class="cv" style="display:grid;place-items:center">🎵</div>`;
+function setCover(t){['bcv','lc'].forEach(i=>{const e=$('#'+i);if(t&&t.cover){e.src=t.cover;e.hidden=false}else e.hidden=true})}
+async function shrink(blob){try{const bm=await createImageBitmap(blob),s=Math.min(1,240/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=bm.width*s|0;c.height=bm.height*s|0;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.8)}catch(e){return ''}}
+const sy=(b,i)=>(b[i]&127)<<21|(b[i+1]&127)<<14|(b[i+2]&127)<<7|(b[i+3]&127);
+function id3(b){const v=b[3];let p=10;const end=10+sy(b,6);
+ if(b[5]&64){p+=v==4?sy(b,10):((b[10]<<24|b[11]<<16|b[12]<<8|b[13])+4)}
+ while(p+10<end&&p+10<b.length){const id=String.fromCharCode(b[p],b[p+1],b[p+2],b[p+3]);
+  const sz=v==4?sy(b,p+4):(b[p+4]<<24|b[p+5]<<16|b[p+6]<<8|b[p+7]);
+  if(!sz||b[p]===0)break;
+  if(id==='APIC'){let q=p+10;const enc=b[q++];while(b[q++]);q++;
+   if(enc==1||enc==2){while(!(b[q]===0&&b[q+1]===0)&&q<p+10+sz)q++;q+=2}else{while(b[q++]);}
+   return b.slice(q,p+10+sz)}
+  p+=10+sz}
+ return null}
+function flac(b){const d=new DataView(b.buffer,b.byteOffset,b.byteLength);let p=4;
+ while(p+4<b.length){const h=b[p],t=h&127,l=d.getUint32(p,false)&0xffffff;p+=4;
+  if(t===6){let q=p+4;q+=4+d.getUint32(q);q+=4+d.getUint32(q);q+=16;const n=d.getUint32(q);return b.slice(q+4,q+4+n)}
+  if(h&128)break;p+=l}return null}
+function mp4(b){const d=new DataView(b.buffer,b.byteOffset,b.byteLength);
+ for(let i=4;i<b.length-24;i++){if(b[i]===99&&b[i+1]===111&&b[i+2]===118&&b[i+3]===114){const s=d.getUint32(i+4);return b.slice(i+20,i+4+s)}}return null}
+async function getCover(f){try{
+ let b=new Uint8Array(await f.slice(0,4e6).arrayBuffer()),img=null;
+ if(b[0]===73&&b[1]===68&&b[2]===51)img=id3(b);
+ else if(b[0]===102&&b[1]===76)img=flac(b);
+ else if(b[4]===102&&b[5]===116){b=new Uint8Array(await f.slice(0,4e7).arrayBuffer());img=mp4(b)}
+ return img&&img.length>100?await shrink(new Blob([img])):''}catch(e){return ''}}
+const clean=n=>n.replace(/\.[a-z0-9]{2,4}$/i,'').replace(/_+/g,' ').replace(/^\s*\d{1,3}\s*[-.)]\s*/,'').replace(/[\(\[][^\)\]]*(official|video|lyrics?|audio|hd|4k)[^\)\]]*[\)\]]/ig,'').trim();
+async function fetchLyrics(t,quiet){try{
+ const j=await(await fetch('https://lrclib.net/api/search?q='+encodeURIComponent(clean(t.name)))).json();
+ const x=j.find(i=>i.syncedLyrics)||j.find(i=>i.plainLyrics);
+ if(!x){if(!quiet)toast('No encontré letra');return ''}
+ return x.syncedLyrics||x.plainLyrics}catch(e){netFail=true;if(!quiet)toast('Sin internet, o bloqueado en esta versión');return ''}}
+async function fetchCover(t){try{
+ const j=await(await fetch('https://itunes.apple.com/search?media=music&entity=song&limit=1&term='+encodeURIComponent(clean(t.name)))).json();
+ const u=j.results&&j.results[0]&&j.results[0].artworkUrl100;if(!u)return '';
+ return await shrink(await(await fetch(u.replace('100x100','300x300'))).blob())}catch(e){netFail=true;return ''}}
+async function enrich(ids,quiet,force){let n=0;netFail=false;
+ for(const id of ids){const t=meta.tracks.find(x=>x.id===id);if(!t||(!force&&t.tried))continue;
+  if(!quiet)toast('Buscando: '+t.name);
+  if(!t.cover){const f=await get(id);if(f){const c=await getCover(f);if(c){t.cover=c;n++}}}
+  if(!t.lrc){const l=await fetchLyrics(t,quiet);if(l){t.lrc=l;n++}}
+  if(!t.cover&&!netFail){const c=await fetchCover(t);if(c){t.cover=c;n++}}
+  if(netFail){if(!quiet)toast('Sin internet, o bloqueado en esta versión');await save();render();return}
+  t.tried=1;await save();
+  if(id===cur){parseLrc(t.lrc);renderLy();setCover(t)}
+  render()}
+ if(!quiet)toast(n?'Listo: '+n+' elementos añadidos':'No se encontró nada nuevo')}
+
+/* ---------- Hojas / UI ---------- */
+function sheet(h){$('#shi').innerHTML=h;$('#sh').style.display='flex'}
+function closeSheet(){$('#sh').style.display='none'}
+$('#sh').onclick=e=>{if(e.target.id==='sh')closeSheet()};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;openPl=null;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));render()});
+
+function addToPl(id){
+  sheet(`<b>Añadir a playlist</b>`+meta.playlists.map(p=>`<div class="row"><span class="t">${esc(p.name)}</span><button class="b" data-p="${p.id}">${p.ids.includes(id)?'✓ Ya está':'Añadir'}</button></div>`).join('')+
+  `<div class="row"><input type="text" id="np" placeholder="Nueva playlist…"><button class="b p" id="npb">Crear</button></div>`);
+  $('#shi').onclick=async e=>{const b=e.target.closest('[data-p]');if(!b)return;
+    const p=meta.playlists.find(x=>x.id===b.dataset.p);if(!p.ids.includes(id))p.ids.push(id);await save();closeSheet();render()};
+  $('#npb').onclick=async()=>{const n=$('#np').value.trim();if(!n)return;meta.playlists.push({id:uid(),name:n,ids:[id]});await save();closeSheet();render()};
+}
+async function delTrack(id){
+  if(!confirm('¿Eliminar esta canción?'))return;
+  meta.tracks=meta.tracks.filter(t=>t.id!==id);meta.playlists.forEach(p=>p.ids=p.ids.filter(i=>i!==id));
+  await rm(id);await save();render();
+}
+function trackRow(t,keyIds,key,extra=''){
+  return `<div class="row ${t.id===cur?'cur':''}"><button class="b ic" data-act="play" data-id="${t.id}" data-key="${key}">▶</button>${cvHtml(t)}
+  <span class="t">${esc(t.name)} ${t.lrc?'<small>🎤</small>':''}</span>${extra}<button class="b ic" data-act="net" data-id="${t.id}">🌐</button>
+  <button class="b ic" data-act="ly" data-id="${t.id}">📝</button>
+  <button class="b ic" data-act="add" data-id="${t.id}">＋</button></div>`;
+}
+function render(){
+  const m=$('#m');
+  if(view==='lib'){
+    m.innerHTML=`<button class="b p" id="imp" style="width:100%;padding:14px">＋ Importar canciones (y .lrc)</button>
+    <p class="mut" style="font-size:13px">Tip: elige el audio y su archivo .lrc con el mismo nombre a la vez y se enlazan solos.</p>
+    ${meta.tracks.length?`<button class="b" data-act="playall" style="width:100%">▶ Reproducir toda la biblioteca</button><button class="b" data-act="netall" style="width:100%;margin-top:8px">🌐 Buscar carátulas y letras en internet</button>`:''}
+    ${meta.tracks.map(t=>trackRow(t,null,'lib',`<button class="b ic" data-act="del" data-id="${t.id}">🗑</button>`)).join('')||'<p class="mut">Aún no hay canciones.</p>'}`;
+    $('#imp').onclick=()=>$('#fi').click();
+  }else if(!openPl){
+    m.innerHTML=`<div class="row"><input type="text" id="np" placeholder="Nombre de nueva playlist"><button class="b p" id="npb">Crear</button></div>`+
+    meta.playlists.map(p=>`<div class="row" data-act="open" data-id="${p.id}"><span class="t"><b>${esc(p.name)}</b> <small>${p.ids.length} canciones</small></span><span>›</span></div>`).join('');
+    $('#npb').onclick=async()=>{const n=$('#np').value.trim();if(!n)return;meta.playlists.push({id:uid(),name:n,ids:[]});await save();render()};
+  }else{
+    const p=meta.playlists.find(x=>x.id===openPl),ts=p.ids.map(i=>meta.tracks.find(t=>t.id===i)).filter(Boolean);
+    m.innerHTML=`<button class="b" data-act="back">← Playlists</button><h3>${esc(p.name)}</h3>
+    <div style="display:flex;gap:8px"><button class="b p" data-act="plplay" style="flex:1">▶ Reproducir</button><button class="b" data-act="plshuf" style="flex:1">🔀 Aleatorio</button><button class="b" data-act="pldel">🗑</button></div>
+    ${ts.map(t=>`<div class="row ${t.id===cur?'cur':''}"><button class="b ic" data-act="play" data-id="${t.id}" data-key="${p.id}">▶</button>${cvHtml(t)}<span class="t">${esc(t.name)}</span><button class="b ic" data-act="ly" data-id="${t.id}">📝</button><button class="b ic" data-act="rmpl" data-id="${t.id}">✕</button></div>`).join('')||'<p class="mut">Vacía. Añade canciones desde la Biblioteca con ＋.</p>'}`;
+  }
+}
+$('#m').onclick=async e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+  const p=meta.playlists.find(x=>x.id===openPl);
+  if(a==='play'){const key=b.dataset.key,ids=key==='lib'?meta.tracks.map(t=>t.id):meta.playlists.find(x=>x.id===key).ids;startCtx(key,ids,id)}
+  else if(a==='playall'){startCtx('lib',meta.tracks.map(t=>t.id))}
+  else if(a==='net')enrich([id],false,true);else if(a==='netall')enrich(meta.tracks.map(t=>t.id),false,true);else if(a==='add')addToPl(id);else if(a==='ly')editLy(id);else if(a==='del')delTrack(id);
+  else if(a==='open'){openPl=id;render()}else if(a==='back'){openPl=null;render()}
+  else if(a==='plplay'||a==='plshuf'){if(!p.ids.length)return;if(a==='plshuf'){shuffle=true;$('#bsh').classList.add('on-b')}startCtx(p.id,[...p.ids])}
+  else if(a==='pldel'){if(confirm('¿Eliminar playlist?')){meta.playlists=meta.playlists.filter(x=>x!==p);openPl=null;await save();render()}}
+  else if(a==='rmpl'){p.ids=p.ids.filter(i=>i!==id);await save();render()}
+};
+
+(async()=>{try{db=await idb();const m=await get('meta');if(m)meta=m}catch(e){}render()})();
+</script></body></html>
