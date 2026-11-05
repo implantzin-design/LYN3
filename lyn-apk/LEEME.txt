@@ -1,0 +1,14 @@
+COMO OBTENER TU APK (sin instalar nada)
+
+1. Crea cuenta en https://github.com (gratis).
+2. Crea un repositorio nuevo (boton "+", "New repository"), nombre: mi-musica. Publico o privado.
+3. Sube TODOS los archivos de esta carpeta, respetando carpetas:
+   - package.json
+   - capacitor.config.json
+   - patch-android.sh
+   - www/index.html
+   - .github/workflows/build.yml   (carpeta oculta: desde la computadora arrastrala; desde el celular usa
+     "Add file > Create new file" y escribe la ruta .github/workflows/build.yml y pega el contenido)
+4. Ve a la pestana "Actions". Se ejecuta "Construir APK" (tarda ~5-8 min). Si no inicia, entra y toca "Run workflow".
+5. Al terminar (check verde), abre la ejecucion y abajo en "Artifacts" descarga Lyn-APK (zip).
+6. Descomprime e instala app-debug.apk en tu telefono (permite "instalar apps de origen desconocido").
